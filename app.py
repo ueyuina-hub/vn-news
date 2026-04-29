@@ -51,6 +51,8 @@ def _light_migrate():
         statements.append("ALTER TABLE article ADD COLUMN importance INTEGER NOT NULL DEFAULT 1")
     if "exec_comment" not in cols:
         statements.append("ALTER TABLE article ADD COLUMN exec_comment TEXT NOT NULL DEFAULT ''")
+    if "easy_summary" not in cols:
+        statements.append("ALTER TABLE article ADD COLUMN easy_summary TEXT NOT NULL DEFAULT ''")
     if "is_bookmarked" not in cols:
         statements.append(
             f"ALTER TABLE article ADD COLUMN is_bookmarked BOOLEAN NOT NULL DEFAULT {bool_default}"

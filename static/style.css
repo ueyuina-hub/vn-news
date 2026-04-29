@@ -588,6 +588,33 @@ a:hover { text-decoration: underline; }
   color: var(--fg);
 }
 
+/* やさしい解説(こども新聞風) */
+.easy-box {
+  margin: 12px 0 8px;
+  padding: 14px 16px;
+  border: 1px dashed var(--line-strong);
+  background: rgba(74, 122, 58, 0.06); /* 緑系のうっすら背景 */
+  border-radius: 10px;
+}
+.easy-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  margin: 0 0 6px;
+  color: var(--ok);
+  letter-spacing: 0.12em;
+  font-family: "Hiragino Sans", sans-serif;
+}
+.easy-label::before {
+  content: "📖 ";
+}
+.easy-text {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.85;
+  color: var(--fg);
+  font-family: "Hiragino Sans", "Noto Sans JP", sans-serif; /* 本文と区別するためゴシック */
+}
+
 .detail-section { margin-top: 22px; }
 .detail-section h2 {
   font-family: "Hiragino Sans", sans-serif;

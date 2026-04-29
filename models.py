@@ -20,6 +20,7 @@ class Article(db.Model):
     # 経営者向け追加項目
     importance = db.Column(db.Integer, nullable=False, default=1, index=True)  # 1..3
     exec_comment = db.Column(db.Text, nullable=False, default="")               # なぜ重要か(一言)
+    easy_summary = db.Column(db.Text, nullable=False, default="")               # こども新聞風のやさしい解説
 
     # ブックマーク・既読管理
     is_bookmarked = db.Column(db.Boolean, nullable=False, default=False, index=True)

@@ -38,6 +38,13 @@
       </section>
     {% endif %}
 
+    {% if article.easy_summary %}
+      <section class="easy-box">
+        <h2 class="easy-label">やさしい解説</h2>
+        <p class="easy-text">{{ article.easy_summary }}</p>
+      </section>
+    {% endif %}
+
     <section class="detail-section">
       <h2>3行要約</h2>
       <ul class="detail-summary">
