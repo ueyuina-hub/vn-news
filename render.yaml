@@ -19,7 +19,6 @@ services:
     name: vn-news
     runtime: python
     plan: free                  # 無料プラン(15分アイドルでスリープ)
-    rootDir: vn-news            # モノレポ運用の場合のサブディレクトリ
     buildCommand: pip install --upgrade pip && pip install -r requirements.txt
     startCommand: gunicorn -w 1 -b 0.0.0.0:$PORT --timeout 120 app:app
     healthCheckPath: /healthz
