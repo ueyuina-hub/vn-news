@@ -1,6 +1,7 @@
 import logging
 import os
 import threading
+import traceback
 from datetime import datetime, timedelta
 
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -8,6 +9,7 @@ from dotenv import load_dotenv
 from flask import Flask, Response, abort, jsonify, render_template, request
 from sqlalchemy import inspect, or_, text
 from sqlalchemy.pool import NullPool
+from werkzeug.exceptions import HTTPException
 
 load_dotenv()
 
@@ -92,6 +94,37 @@ def create_app() -> Flask:
                 {"WWW-Authenticate": 'Basic realm="Vietnam Briefing"'},
             )
         return None
+
+    # 各リクエスト開始時にセッションを念のため rollback して
+    # 別スレッド(fetcher)由来の PendingRollbackError を引き継がないようにする。
+    @app.before_request
+    def _reset_session_state():
+        if request.path == "/healthz":
+            return None
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+        return None
+
+    # 500エラーを画面に詳細表示する(運用後は削除可だが診断時に有用)
+    @app.errorhandler(Exception)
+    def _show_exception(e):
+        if isinstance(e, HTTPException):
+            return e
+        logging.getLogger(__name__).exception("Unhandled exception")
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+        tb = traceback.format_exc()
+        return Response(
+            f"<h1>500 Internal Error</h1>"
+            f"<p><b>{type(e).__name__}:</b> {e}</p>"
+            f"<pre style='white-space:pre-wrap;font-size:12px'>{tb}</pre>",
+            500,
+            {"Content-Type": "text/html; charset=utf-8"},
+        )
 
     @app.route("/")
     def index():
