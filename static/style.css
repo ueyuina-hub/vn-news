@@ -1,22 +1,42 @@
+/* =========================================================
+   Vietnam Briefing — executive theme
+   高級感のあるシンプルなデザイン。スマホ最適化。
+   ========================================================= */
+
 :root {
-  --bg: #f7f7f8;
-  --fg: #1a1a1a;
-  --muted: #666;
-  --card-bg: #ffffff;
-  --card-border: #e3e3e6;
-  --link: #1a73e8;
-  --shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --bg: #f5f3ee;             /* warm ivory */
+  --bg-elev: #ffffff;
+  --fg: #1c1c1e;
+  --fg-soft: #3a3a3c;
+  --muted: #6b6b70;
+  --line: #e6e2d8;
+  --line-strong: #d6d1c3;
+  --accent: #8a6a2c;          /* deep gold */
+  --accent-soft: #b89763;
+  --danger: #b1442b;
+  --warn: #c98a14;
+  --ok: #4a7a3a;
+  --shadow-sm: 0 1px 2px rgba(28, 28, 30, 0.05);
+  --shadow-md: 0 4px 16px rgba(28, 28, 30, 0.07);
+  --radius: 14px;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #14151a;
-    --fg: #e9e9ec;
-    --muted: #9aa0a6;
-    --card-bg: #1e2027;
-    --card-border: #2c2f37;
-    --link: #8ab4f8;
-    --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    --bg: #14130f;
+    --bg-elev: #1c1b17;
+    --fg: #ece9e1;
+    --fg-soft: #c8c4b9;
+    --muted: #8e8a7d;
+    --line: #2c2a24;
+    --line-strong: #3b382f;
+    --accent: #d3b06a;
+    --accent-soft: #b89763;
+    --danger: #d8694e;
+    --warn: #e0a738;
+    --ok: #80a86d;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
   }
 }
 
@@ -27,47 +47,285 @@ html, body {
   padding: 0;
   background: var(--bg);
   color: var(--fg);
-  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans",
-    "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic", Meiryo,
-    sans-serif;
+  font-family: "Hiragino Mincho ProN", "Yu Mincho", "YuMincho",
+    "Noto Serif JP", "Times New Roman", serif;
   font-size: 16px;
-  line-height: 1.7;
+  line-height: 1.75;
   -webkit-font-smoothing: antialiased;
+  letter-spacing: 0.01em;
 }
 
-a { color: var(--link); text-decoration: none; }
+a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
+
+/* ---------- Header ---------- */
 
 .site-header {
   position: sticky;
   top: 0;
   z-index: 10;
-  background: var(--card-bg);
-  border-bottom: 1px solid var(--card-border);
-  padding: 12px 16px;
+  background: var(--bg-elev);
+  border-bottom: 1px solid var(--line);
+  box-shadow: var(--shadow-sm);
+}
+
+.header-inner {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
 }
 
 .site-title {
-  font-weight: 700;
-  font-size: 1.05rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
   color: var(--fg);
+  font-weight: 600;
 }
+.site-title:hover { text-decoration: none; }
+
+.brand-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-family: "Times New Roman", serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.05em;
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  font-family: "Times New Roman", "Hiragino Mincho ProN", serif;
+  font-size: 1.05rem;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+}
+.brand-text small {
+  display: block;
+  font-family: "Hiragino Sans", "Noto Sans JP", sans-serif;
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  margin-top: 2px;
+}
+
+/* ---------- Container ---------- */
 
 .container {
-  max-width: 720px;
+  max-width: 760px;
   margin: 0 auto;
-  padding: 16px;
+  padding: 22px 18px 40px;
 }
 
-.page-title {
-  font-size: 1.25rem;
-  margin: 8px 0 16px;
+/* ---------- Section heads ---------- */
+
+.section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 28px 0 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line-strong);
 }
+.section-head:first-child { margin-top: 6px; }
+
+.section-title {
+  font-family: "Hiragino Mincho ProN", "Times New Roman", serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin: 0;
+  letter-spacing: 0.06em;
+}
+
+.section-sub {
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-family: "Hiragino Sans", sans-serif;
+  letter-spacing: 0.08em;
+}
+
+/* ---------- Top 3 (highlight) ---------- */
+
+.top3 {
+  background: linear-gradient(180deg, var(--bg-elev), var(--bg));
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  padding: 18px 18px 8px;
+  box-shadow: var(--shadow-md);
+  position: relative;
+}
+.top3::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 18px; right: 18px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-soft), transparent);
+  border-radius: 2px;
+}
+
+.top3-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  counter-reset: t3;
+}
+
+.top3-item {
+  counter-increment: t3;
+  border-top: 1px solid var(--line);
+  padding: 12px 0;
+}
+.top3-item:first-child { border-top: 0; }
+
+.top3-link { color: inherit; display: block; }
+.top3-link:hover { text-decoration: none; }
+
+.top3-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.top3-meta::before {
+  content: counter(t3, decimal-leading-zero);
+  font-family: "Times New Roman", serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--accent);
+  margin-right: 4px;
+  letter-spacing: 0.05em;
+}
+
+.top3-title {
+  margin: 2px 0 4px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.top3-comment {
+  margin: 4px 0 0;
+  color: var(--fg-soft);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+/* ---------- Filters & Search ---------- */
+
+.filters {
+  margin: 24px 0 8px;
+}
+
+.search-form {
+  display: flex;
+  gap: 8px;
+}
+
+.search-input {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 14px;
+  font-size: 0.95rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: var(--bg-elev);
+  color: var(--fg);
+  font-family: inherit;
+}
+.search-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(138, 106, 44, 0.18);
+}
+
+.search-btn {
+  padding: 0 18px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.search-btn:hover { background: var(--accent-soft); border-color: var(--accent-soft); }
+
+.cat-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.cat-chip {
+  display: inline-block;
+  padding: 6px 12px;
+  font-size: 0.82rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--bg-elev);
+  color: var(--fg-soft);
+  letter-spacing: 0.04em;
+  font-family: "Hiragino Sans", sans-serif;
+}
+.cat-chip:hover { border-color: var(--accent-soft); text-decoration: none; }
+.cat-chip.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+/* state filters (bookmark / unread) */
+.state-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.state-chip {
+  display: inline-block;
+  padding: 6px 12px;
+  font-size: 0.78rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--bg-elev);
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  font-family: "Hiragino Sans", sans-serif;
+}
+.state-chip:hover { text-decoration: none; color: var(--accent); border-color: var(--accent-soft); }
+.state-chip.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+/* ---------- Article cards ---------- */
 
 .empty {
   color: var(--muted);
-  padding: 24px 0;
+  padding: 28px 0;
   text-align: center;
+  font-size: 0.95rem;
+}
+.empty code {
+  background: var(--line);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.85em;
 }
 
 .article-list {
@@ -80,12 +338,61 @@ a:hover { text-decoration: underline; }
 }
 
 .article-card {
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  border-radius: 12px;
-  box-shadow: var(--shadow);
-  padding: 14px 16px;
+  position: relative;
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  padding: 16px 18px 14px;
+  transition: box-shadow 0.15s ease, transform 0.15s ease, opacity 0.15s ease;
 }
+.article-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+/* 既読は薄く */
+.article-card.is-read {
+  opacity: 0.62;
+}
+.article-card.is-read:hover { opacity: 0.95; }
+
+/* ブックマーク中は左ボーダーを金色に */
+.article-card.is-bookmarked {
+  border-left: 3px solid var(--accent);
+}
+
+/* 一覧カードの☆ボタン */
+.bookmark-btn {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  background: var(--bg-elev);
+  color: var(--muted);
+  font-size: 1.05rem;
+  line-height: 1;
+  cursor: pointer;
+  font-family: inherit;
+  z-index: 2;
+  transition: color 0.15s, background 0.15s, border-color 0.15s, transform 0.1s;
+}
+.bookmark-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent-soft);
+}
+.bookmark-btn:active { transform: scale(0.92); }
+.bookmark-btn.on {
+  color: #fff;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+/* タイトルがボタンに被らないよう右にスペース */
+.article-card .card-title { padding-right: 38px; }
 
 .card-link {
   display: block;
@@ -99,100 +406,228 @@ a:hover { text-decoration: underline; }
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: var(--muted);
-  margin-bottom: 6px;
+  margin-bottom: 8px;
+  font-family: "Hiragino Sans", sans-serif;
+  letter-spacing: 0.04em;
 }
 
 .badge {
   display: inline-block;
-  padding: 2px 10px;
+  padding: 3px 10px;
   border-radius: 999px;
-  font-size: 0.75rem;
-  color: #fff;
+  font-size: 0.72rem;
   font-weight: 600;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.06em;
+  background: var(--fg);
+  color: var(--bg-elev);
 }
-.badge-政治 { background: #7c3aed; }
-.badge-経済 { background: #1a73e8; }
-.badge-社会 { background: #16a34a; }
-.badge-観光 { background: #ea8a1a; }
-.badge-国際 { background: #dc2626; }
 
-.source { text-transform: uppercase; letter-spacing: 0.04em; }
+/* importance pill */
+.imp {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  border: 1px solid var(--line-strong);
+  background: transparent;
+  color: var(--muted);
+}
+.imp-3 { color: #fff; background: var(--danger); border-color: var(--danger); }
+.imp-2 { color: var(--warn); border-color: var(--warn); background: rgba(201, 138, 20, 0.08); }
+.imp-1 { color: var(--muted); }
+
+.source {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.7rem;
+}
 .time { margin-left: auto; }
 
 .card-title {
-  font-size: 1.05rem;
-  font-weight: 700;
+  font-family: "Hiragino Mincho ProN", "Yu Mincho", serif;
+  font-size: 1.1rem;
+  font-weight: 600;
   margin: 4px 0 8px;
-  line-height: 1.45;
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+}
+
+.card-comment {
+  margin: 6px 0 10px;
+  padding: 8px 12px;
+  border-left: 3px solid var(--accent);
+  background: rgba(138, 106, 44, 0.05);
+  color: var(--fg-soft);
+  font-size: 0.88rem;
+  line-height: 1.6;
+  font-family: "Hiragino Sans", sans-serif;
+  border-radius: 0 6px 6px 0;
 }
 
 .card-summary {
-  list-style: disc;
-  padding-left: 1.1em;
+  list-style: none;
+  padding-left: 0;
   margin: 0;
-  color: var(--fg);
+  color: var(--fg-soft);
   font-size: 0.92rem;
+  font-family: "Hiragino Sans", sans-serif;
 }
-.card-summary li { margin: 2px 0; }
+.card-summary li {
+  margin: 3px 0;
+  padding-left: 1em;
+  position: relative;
+}
+.card-summary li::before {
+  content: "—";
+  position: absolute;
+  left: 0;
+  color: var(--accent-soft);
+}
 
 .card-source-link {
   display: inline-block;
-  margin-top: 10px;
-  padding: 8px 0;
-  font-size: 0.85rem;
-  min-height: 44px;
-  line-height: 28px;
+  margin-top: 8px;
+  padding: 6px 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+  min-height: 36px;
+  line-height: 24px;
+  letter-spacing: 0.04em;
+  font-family: "Hiragino Sans", sans-serif;
 }
+.card-source-link:hover { color: var(--accent); }
+
+/* ---------- Detail ---------- */
 
 .back-link {
   display: inline-block;
   padding: 8px 0;
   min-height: 44px;
   line-height: 28px;
+  font-family: "Hiragino Sans", sans-serif;
+  font-size: 0.9rem;
+  color: var(--muted);
 }
 
 .article-detail {
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  border-radius: 12px;
-  box-shadow: var(--shadow);
-  padding: 16px 18px;
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  padding: 22px 22px 20px;
 }
 
 .detail-title {
-  font-size: 1.35rem;
-  line-height: 1.4;
-  margin: 6px 0 4px;
+  font-family: "Hiragino Mincho ProN", "Yu Mincho", serif;
+  font-size: 1.5rem;
+  line-height: 1.45;
+  margin: 8px 0 4px;
+  letter-spacing: 0.02em;
 }
 
 .detail-original-title {
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   color: var(--muted);
-  margin: 0 0 12px;
+  margin: 0 0 14px;
+  font-family: "Hiragino Sans", sans-serif;
+  letter-spacing: 0.02em;
 }
 
-.detail-section { margin-top: 18px; }
+.detail-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 12px 0 6px;
+}
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--bg-elev);
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-family: "Hiragino Sans", sans-serif;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+}
+.action-btn:hover { color: var(--accent); border-color: var(--accent-soft); }
+.action-btn .action-icon { font-size: 0.95rem; line-height: 1; }
+.action-btn.on {
+  color: #fff;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.exec-box {
+  margin: 16px 0 8px;
+  padding: 14px 16px;
+  border: 1px solid var(--accent-soft);
+  background: rgba(138, 106, 44, 0.06);
+  border-radius: 10px;
+}
+.exec-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  margin: 0 0 6px;
+  color: var(--accent);
+  letter-spacing: 0.12em;
+  font-family: "Hiragino Sans", sans-serif;
+}
+.exec-text {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: var(--fg);
+}
+
+.detail-section { margin-top: 22px; }
 .detail-section h2 {
-  font-size: 1.0rem;
-  margin: 0 0 8px;
-  padding-bottom: 4px;
-  border-bottom: 1px solid var(--card-border);
+  font-family: "Hiragino Sans", sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  margin: 0 0 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  letter-spacing: 0.14em;
+  text-transform: none;
 }
 
-.detail-summary { padding-left: 1.2em; margin: 0; }
-.detail-summary li { margin: 4px 0; }
+.detail-summary {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+.detail-summary li {
+  margin: 6px 0;
+  padding-left: 1.2em;
+  position: relative;
+  font-size: 0.96rem;
+}
+.detail-summary li::before {
+  content: "—";
+  position: absolute;
+  left: 0;
+  color: var(--accent-soft);
+}
 
 .detail-body p {
-  margin: 0 0 0.8em;
+  margin: 0 0 0.9em;
   word-break: break-word;
 }
 
 .detail-body.original {
   color: var(--muted);
-  font-size: 0.95rem;
+  font-size: 0.92rem;
+  font-family: "Hiragino Sans", sans-serif;
 }
 
 details > summary {
@@ -200,21 +635,39 @@ details > summary {
   padding: 8px 0;
   min-height: 44px;
   font-weight: 600;
+  font-size: 0.85rem;
+  font-family: "Hiragino Sans", sans-serif;
+  color: var(--fg-soft);
+  letter-spacing: 0.04em;
 }
+details > summary:hover { color: var(--accent); }
 
 .source-link-row {
-  margin-top: 18px;
+  margin-top: 22px;
   text-align: right;
 }
+
+/* ---------- Footer ---------- */
 
 .site-footer {
   text-align: center;
   color: var(--muted);
-  padding: 24px 16px 32px;
+  padding: 28px 16px 36px;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  font-family: "Hiragino Sans", sans-serif;
+  border-top: 1px solid var(--line);
+  margin-top: 30px;
 }
 
+/* ---------- Responsive ---------- */
+
 @media (max-width: 480px) {
-  .container { padding: 12px; }
+  .container { padding: 16px 14px 32px; }
+  .header-inner { padding: 12px 14px; }
+  .article-detail { padding: 18px 16px 16px; }
   .card-title { font-size: 1.0rem; }
-  .detail-title { font-size: 1.2rem; }
+  .detail-title { font-size: 1.25rem; }
+  .top3-title { font-size: 1.0rem; }
+  .search-btn { padding: 0 14px; }
 }

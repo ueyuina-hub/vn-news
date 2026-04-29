@@ -1,0 +1,51 @@
+# Render Blueprint — Vietnam Briefing (Free tier 構成)
+#
+# Renderダッシュボードで「Blueprint → New Blueprint Instance」を選び、
+# このリポジトリを指定すると Web サービス + PostgreSQL が一括で作成されます。
+#
+# 必須の手動ステップ (ダッシュボードの Environment 設定):
+#   1) ANTHROPIC_API_KEY        — Anthropic Console で発行したキー
+#   2) BASIC_AUTH_USER, BASIC_AUTH_PASS — 知人に渡すユーザー/パス(両方セットで認証ON)
+#
+# DATABASE_URL は fromDatabase により Render PostgreSQL から自動で注入されます。
+# app.py 側で postgres:// → postgresql+psycopg2:// への正規化に対応済みです。
+#
+# 注意: Render Free PostgreSQL は作成から 90日 で自動削除されます。
+# 長期運用するなら Neon / Supabase の Free Postgres に移行してください
+# (DATABASE_URL を貼り替えるだけ。詳細は README 参照)。
+
+services:
+  - type: web
+    name: vn-news
+    runtime: python
+    plan: free                  # 無料プラン(15分アイドルでスリープ)
+    rootDir: vn-news            # モノレポ運用の場合のサブディレクトリ
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
+    startCommand: gunicorn -w 1 -b 0.0.0.0:$PORT --timeout 120 app:app
+    healthCheckPath: /healthz
+    autoDeploy: true
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false             # ダッシュボードで個別に設定するシークレット
+      - key: BASIC_AUTH_USER
+        sync: false             # 知人に渡すユーザー名
+      - key: BASIC_AUTH_PASS
+        sync: false             # 知人に渡すパスワード
+      - key: PYTHON_VERSION
+        value: "3.11.9"
+      - key: FETCH_INTERVAL_MINUTES
+        value: "30"
+      - key: MAX_ARTICLES_PER_FEED
+        value: "10"
+      - key: CLAUDE_MODEL
+        value: claude-haiku-4-5-20251001
+      - key: DATABASE_URL
+        fromDatabase:
+          name: vn-news-db
+          property: connectionString
+
+databases:
+  - name: vn-news-db
+    plan: free                  # 無料 Postgres (90日後に削除されるので注意)
+    databaseName: vnnews
+    user: vnnews

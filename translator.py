@@ -5,7 +5,7 @@ import re
 
 from anthropic import Anthropic
 
-from config import CLAUDE_MODEL, MAX_BODY_CHARS, VALID_CATEGORIES
+from config import CLAUDE_MODEL, MAX_BODY_CHARS, VALID_CATEGORIES, VALID_IMPORTANCE
 
 logger = logging.getLogger(__name__)
 
@@ -22,25 +22,38 @@ def _get_client():
     return _client
 
 
-SYSTEM_PROMPT = """あなたはベトナムのニュース記事を日本人読者向けに日本語化する編集者です。
-入力として、ベトナム語(または英語)のニュース記事のタイトルと本文がXMLタグで与えられます。
-以下のすべてのタスクをまとめて行い、結果を1つのJSONで返してください。
+SYSTEM_PROMPT = """あなたはベトナムでサウナ・温浴事業を展開する日本企業の社長専属の現地ニュース編集者です。
+入力としてベトナム語(または英語)のニュース記事のタイトルと本文がXMLタグで与えられます。
+社長は短時間で経営判断したいので、専門用語を避け、要点を端的にまとめてください。
 
-タスク:
-1. title_ja: タイトルを自然で読みやすい日本語にする
-2. body_ja: 本文を読みやすい日本語に翻訳する。改行は適度に保つ
-3. summary_ja: 本文の要点を日本語で3行に要約する。配列で3要素を返す
-4. category: 次の5つから記事内容に最も近いものを1つ選ぶ — 政治 / 経済 / 社会 / 観光 / 国際
+以下のすべてを行い、結果を1つのJSONで返してください:
 
-カテゴリ判定の指針:
-- 政治: 政府、政策、選挙、外交、法律、党の動き
-- 経済: 株価、為替、企業業績、貿易、産業、不動産
-- 社会: 事件事故、教育、医療、環境、文化、生活、犯罪
-- 観光: 旅行、観光地、ホテル、グルメ、レジャー
-- 国際: ベトナム以外の国の出来事、国際情勢全般
+1. title_ja: タイトルを自然で読みやすい日本語にする(意訳しすぎず、原意を保つ)
+2. body_ja: 本文を自然な日本語に翻訳する。改行は適度に保ち、原意を変えない
+3. summary_ja: 本文の要点を日本語で3行に要約する。配列で3要素を返す。1行は40〜70字程度
+4. category: 次の8カテゴリから最も適切なものを1つだけ選ぶ
+   - 不動産 / 観光 / 経済 / 規制・法律 / 為替・金融 / サウナ・ウェルネス / リスク情報 / その他
+5. importance: 経営判断にどの程度影響するかを 1〜3 の整数で評価する
+   - 3 = 高: 事業判断や投資判断に直結しうる(法改正、外資規制、為替急変、観光需要の急変、現地の重大事件など)
+   - 2 = 中: 押さえておきたい参考情報(市場トレンド、業界動向、富裕層の消費動向など)
+   - 1 = 低: 一般的なニュース、雑報
+6. exec_comment: 経営者にとって「なぜ重要か」を日本語1文(目安50〜90字)で書く。
+   サウナ事業・不動産・観光・外資規制・為替・治安・富裕層消費との接点があれば必ず触れる。
+   接点が薄い記事では、その旨を率直に書いてよい(例: "直接の事業影響は小さいが、現地の消費感覚を把握する材料")。
+
+カテゴリ判定の指針(社長の関心軸):
+- 不動産: ベトナムの不動産市場、ホテル・リゾート開発、商業施設、土地法
+- 観光: 観光客数、航空便、ビザ、観光地、ホテル稼働率、旅行支出
+- 経済: 株価、企業業績、貿易、産業全般、消費動向、富裕層の動向
+- 規制・法律: 外資規制、業法、許認可、税制、労働法、新法成立
+- 為替・金融: VND為替、銀行、金利、インフレ、物価
+- サウナ・ウェルネス: サウナ、温浴、スパ、フィットネス、ウェルネス施設、健康消費
+- リスク情報: 治安、事故、自然災害、政情不安、感染症、デモ、汚職事件
+- その他: 上記に当てはまらないもの
 
 出力形式: 必ず<json>...</json>タグで囲んだJSONのみを返してください。前置きや解説は不要です。
-JSONのキーは title_ja, body_ja, summary_ja, category の4つだけです。"""
+JSONのキーは title_ja, body_ja, summary_ja, category, importance, exec_comment の6つだけです。
+summary_ja は文字列の配列、importance は整数、それ以外は文字列です。"""
 
 
 def _truncate(text: str, limit: int) -> str:
@@ -54,15 +67,15 @@ def _truncate(text: str, limit: int) -> str:
 def _extract_json(text: str) -> dict:
     match = re.search(r"<json>(.*?)</json>", text, re.DOTALL)
     raw = match.group(1).strip() if match else text.strip()
-    # Strip optional code fences
     raw = re.sub(r"^```(?:json)?\s*|\s*```$", "", raw, flags=re.MULTILINE).strip()
     return json.loads(raw)
 
 
 def translate_article(title_vi: str, body_vi: str) -> dict:
-    """Translate, summarize, and categorize an article in a single Claude call.
+    """Translate, summarize, categorize, and rate importance in a single Claude call.
 
-    Returns dict with keys: title_ja, body_ja, summary_ja (str, newline-joined), category.
+    Returns dict with keys:
+      title_ja, body_ja, summary_ja (newline-joined), category, importance, exec_comment
     Raises on unrecoverable API errors.
     """
     client = _get_client()
@@ -98,10 +111,20 @@ def translate_article(title_vi: str, body_vi: str) -> dict:
         summary_lines = [s for s in summary.split("\n") if s.strip()][:3]
     else:
         summary_lines = [str(s).strip() for s in summary if str(s).strip()][:3]
+
     category = (data.get("category") or "").strip()
     if category not in VALID_CATEGORIES:
-        logger.warning("Invalid category %r, falling back to 社会", category)
-        category = "社会"
+        logger.warning("Invalid category %r, falling back to その他", category)
+        category = "その他"
+
+    try:
+        importance = int(data.get("importance") or 1)
+    except (TypeError, ValueError):
+        importance = 1
+    if importance not in VALID_IMPORTANCE:
+        importance = max(1, min(3, importance))
+
+    exec_comment = (data.get("exec_comment") or "").strip()
 
     if not title_ja or not body_ja or not summary_lines:
         raise ValueError("Claude response missing required fields")
@@ -111,4 +134,6 @@ def translate_article(title_vi: str, body_vi: str) -> dict:
         "body_ja": body_ja,
         "summary_ja": "\n".join(summary_lines),
         "category": category,
+        "importance": importance,
+        "exec_comment": exec_comment,
     }

@@ -1,11 +1,12 @@
 {% extends "base.html" %}
-{% block title %}{{ article.title_ja }} | ベトナムニュース日本語版{% endblock %}
+{% block title %}{{ article.title_ja }} | Vietnam Briefing{% endblock %}
 {% block content %}
   <p><a class="back-link" href="{{ url_for('index') }}">← 一覧に戻る</a></p>
 
-  <article class="article-detail">
+  <article class="article-detail" data-article-id="{{ article.id }}">
     <div class="card-meta">
-      <span class="badge badge-{{ article.category }}">{{ article.category }}</span>
+      <span class="badge">{{ article.category }}</span>
+      <span class="imp imp-{{ article.importance }}">重要度{{ article.importance_label }}</span>
       <span class="source">{{ article.source }}</span>
       {% if article.published_at %}
         <time class="time">{{ article.published_at.strftime('%Y-%m-%d %H:%M') }}</time>
@@ -14,6 +15,28 @@
 
     <h1 class="detail-title">{{ article.title_ja }}</h1>
     <p class="detail-original-title">原題: {{ article.title_vi }}</p>
+
+    <div class="detail-actions">
+      <button type="button"
+              class="action-btn bookmark-btn-detail {% if article.is_bookmarked %}on{% endif %}"
+              data-id="{{ article.id }}">
+        <span class="action-icon">★</span>
+        <span class="action-label">{% if article.is_bookmarked %}ブックマーク済み{% else %}ブックマーク{% endif %}</span>
+      </button>
+      <button type="button"
+              class="action-btn read-btn {% if not article.is_read %}on{% endif %}"
+              data-id="{{ article.id }}">
+        <span class="action-icon">●</span>
+        <span class="action-label">{% if article.is_read %}未読に戻す{% else %}既読にする{% endif %}</span>
+      </button>
+    </div>
+
+    {% if article.exec_comment %}
+      <section class="exec-box">
+        <h2 class="exec-label">経営視点コメント</h2>
+        <p class="exec-text">{{ article.exec_comment }}</p>
+      </section>
+    {% endif %}
 
     <section class="detail-section">
       <h2>3行要約</h2>
@@ -50,4 +73,33 @@
       </a>
     </p>
   </article>
+
+  <script>
+    (function () {
+      const bm = document.querySelector('.bookmark-btn-detail');
+      if (bm) {
+        bm.addEventListener('click', async function () {
+          const id = bm.dataset.id;
+          const res = await fetch('/article/' + id + '/bookmark', { method: 'POST' });
+          if (!res.ok) return;
+          const data = await res.json();
+          bm.classList.toggle('on', data.is_bookmarked);
+          bm.querySelector('.action-label').textContent =
+            data.is_bookmarked ? 'ブックマーク済み' : 'ブックマーク';
+        });
+      }
+      const rd = document.querySelector('.read-btn');
+      if (rd) {
+        rd.addEventListener('click', async function () {
+          const id = rd.dataset.id;
+          const res = await fetch('/article/' + id + '/read', { method: 'POST' });
+          if (!res.ok) return;
+          const data = await res.json();
+          rd.classList.toggle('on', !data.is_read);
+          rd.querySelector('.action-label').textContent =
+            data.is_read ? '未読に戻す' : '既読にする';
+        });
+      }
+    })();
+  </script>
 {% endblock %}

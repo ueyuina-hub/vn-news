@@ -1,32 +1,147 @@
 {% extends "base.html" %}
-{% block title %}最新ニュース | ベトナムニュース日本語版{% endblock %}
+{% block title %}最新ブリーフィング | Vietnam Briefing{% endblock %}
 {% block content %}
-  <h1 class="page-title">最新ニュース</h1>
-  {% if not articles %}
-    <p class="empty">まだ記事がありません。バックグラウンドで取得中です。数分後に再読み込みしてください。</p>
+
+  {% if top3 and not bookmarked and not unread and not q and not current_category %}
+    <section class="top3">
+      <div class="section-head">
+        <h2 class="section-title">本日の重要ニュース</h2>
+        <span class="section-sub">経営判断に効く厳選3本</span>
+      </div>
+      <ol class="top3-list">
+        {% for a in top3 %}
+          <li class="top3-item">
+            <a class="top3-link" href="{{ url_for('detail', article_id=a.id) }}">
+              <div class="top3-meta">
+                <span class="badge cat cat-{{ loop.index }}">{{ a.category }}</span>
+                <span class="imp imp-{{ a.importance }}">重要度{{ a.importance_label }}</span>
+              </div>
+              <h3 class="top3-title">{{ a.title_ja }}</h3>
+              {% if a.exec_comment %}
+                <p class="top3-comment">{{ a.exec_comment }}</p>
+              {% endif %}
+            </a>
+          </li>
+        {% endfor %}
+      </ol>
+    </section>
   {% endif %}
-  <ul class="article-list">
-    {% for a in articles %}
-      <li class="article-card">
-        <a class="card-link" href="{{ url_for('detail', article_id=a.id) }}">
-          <div class="card-meta">
-            <span class="badge badge-{{ a.category }}">{{ a.category }}</span>
-            <span class="source">{{ a.source }}</span>
-            {% if a.published_at %}
-              <time class="time">{{ a.published_at.strftime('%Y-%m-%d %H:%M') }}</time>
+
+  <section class="filters">
+    <form method="get" action="{{ url_for('index') }}" class="search-form">
+      <input
+        type="search"
+        name="q"
+        value="{{ q }}"
+        placeholder="キーワード検索 (例: 不動産, ビザ, ホーチミン)"
+        class="search-input"
+        autocomplete="off"
+      >
+      {% if current_category %}<input type="hidden" name="category" value="{{ current_category }}">{% endif %}
+      {% if bookmarked %}<input type="hidden" name="bookmarked" value="1">{% endif %}
+      {% if unread %}<input type="hidden" name="unread" value="1">{% endif %}
+      <button type="submit" class="search-btn">検索</button>
+    </form>
+
+    <nav class="cat-nav">
+      <a class="cat-chip {% if not current_category %}active{% endif %}"
+         href="{{ url_for('index', q=q or none, bookmarked='1' if bookmarked else none, unread='1' if unread else none) }}">すべて</a>
+      {% for c in categories %}
+        <a class="cat-chip {% if current_category == c %}active{% endif %}"
+           href="{{ url_for('index', category=c, q=q or none, bookmarked='1' if bookmarked else none, unread='1' if unread else none) }}">{{ c }}</a>
+      {% endfor %}
+    </nav>
+
+    <nav class="state-nav">
+      <a class="state-chip {% if bookmarked %}active{% endif %}"
+         href="{{ url_for('index',
+                          category=current_category or none,
+                          q=q or none,
+                          bookmarked=none if bookmarked else '1',
+                          unread='1' if unread else none) }}">
+        {% if bookmarked %}★ ブックマーク中{% else %}☆ ブックマークのみ{% endif %}
+      </a>
+      <a class="state-chip {% if unread %}active{% endif %}"
+         href="{{ url_for('index',
+                          category=current_category or none,
+                          q=q or none,
+                          bookmarked='1' if bookmarked else none,
+                          unread=none if unread else '1') }}">
+        {% if unread %}● 未読のみ表示中{% else %}○ 未読のみ{% endif %}
+      </a>
+    </nav>
+  </section>
+
+  <section class="list-section">
+    <div class="section-head">
+      <h2 class="section-title">最新ニュース</h2>
+      {% if current_category or q or bookmarked or unread %}
+        <span class="section-sub">
+          {% if current_category %}カテゴリ: {{ current_category }}　{% endif %}
+          {% if q %}検索: 「{{ q }}」　{% endif %}
+          {% if bookmarked %}ブックマーク　{% endif %}
+          {% if unread %}未読　{% endif %}
+        </span>
+      {% endif %}
+    </div>
+
+    {% if not articles %}
+      <p class="empty">該当する記事がありません。<br>初回起動時はバックグラウンドで取得中の場合があります。<code>python seed_sample.py</code> でサンプルを投入できます。</p>
+    {% endif %}
+
+    <ul class="article-list">
+      {% for a in articles %}
+        <li class="article-card {% if a.is_read %}is-read{% endif %} {% if a.is_bookmarked %}is-bookmarked{% endif %}"
+            data-article-id="{{ a.id }}">
+          <button type="button"
+                  class="bookmark-btn {% if a.is_bookmarked %}on{% endif %}"
+                  data-id="{{ a.id }}"
+                  aria-label="ブックマーク切替"
+                  title="ブックマーク">★</button>
+          <a class="card-link" href="{{ url_for('detail', article_id=a.id) }}">
+            <div class="card-meta">
+              <span class="badge">{{ a.category }}</span>
+              <span class="imp imp-{{ a.importance }}">重要度{{ a.importance_label }}</span>
+              <span class="source">{{ a.source }}</span>
+              {% if a.published_at %}
+                <time class="time">{{ a.published_at.strftime('%Y-%m-%d %H:%M') }}</time>
+              {% endif %}
+            </div>
+            <h2 class="card-title">{{ a.title_ja }}</h2>
+            {% if a.exec_comment %}
+              <p class="card-comment">なぜ重要か — {{ a.exec_comment }}</p>
             {% endif %}
-          </div>
-          <h2 class="card-title">{{ a.title_ja }}</h2>
-          <ul class="card-summary">
-            {% for line in a.summary_lines %}
-              <li>{{ line }}</li>
-            {% endfor %}
-          </ul>
-        </a>
-        <a class="card-source-link" href="{{ a.url }}" target="_blank" rel="noopener noreferrer">
-          元記事を開く ↗
-        </a>
-      </li>
-    {% endfor %}
-  </ul>
+            <ul class="card-summary">
+              {% for line in a.summary_lines %}
+                <li>{{ line }}</li>
+              {% endfor %}
+            </ul>
+          </a>
+          <a class="card-source-link" href="{{ a.url }}" target="_blank" rel="noopener noreferrer">
+            元記事を開く ↗
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <script>
+    document.querySelectorAll('.bookmark-btn').forEach(function (btn) {
+      btn.addEventListener('click', async function (ev) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        const id = btn.dataset.id;
+        try {
+          const res = await fetch('/article/' + id + '/bookmark', { method: 'POST' });
+          if (!res.ok) throw new Error('bookmark failed');
+          const data = await res.json();
+          btn.classList.toggle('on', data.is_bookmarked);
+          const card = btn.closest('.article-card');
+          if (card) card.classList.toggle('is-bookmarked', data.is_bookmarked);
+        } catch (e) {
+          console.error(e);
+        }
+      });
+    });
+  </script>
 {% endblock %}

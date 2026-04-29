@@ -86,6 +86,8 @@ def _process_feed(source: str, url: str) -> int:
             body_ja=translated["body_ja"],
             summary_ja=translated["summary_ja"],
             category=translated["category"],
+            importance=translated.get("importance", 1),
+            exec_comment=translated.get("exec_comment", ""),
             published_at=_parse_published(entry),
         )
         db.session.add(article)
