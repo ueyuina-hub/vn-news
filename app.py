@@ -36,27 +36,44 @@ def _build_db_uri() -> str:
 
 
 def _light_migrate():
-    """SQLiteの既存テーブルに新カラムが無ければ追加する軽量マイグレーション。"""
+    """既存テーブルに新カラムが無ければ追加する軽量マイグレーション (SQLite/PG両対応)。"""
     insp = inspect(db.engine)
     if "article" not in insp.get_table_names():
         return
     cols = {c["name"] for c in insp.get_columns("article")}
+
+    is_pg = db.engine.dialect.name == "postgresql"
+    bool_default = "FALSE" if is_pg else "0"
+    datetime_type = "TIMESTAMP" if is_pg else "DATETIME"
+
     statements = []
     if "importance" not in cols:
         statements.append("ALTER TABLE article ADD COLUMN importance INTEGER NOT NULL DEFAULT 1")
     if "exec_comment" not in cols:
         statements.append("ALTER TABLE article ADD COLUMN exec_comment TEXT NOT NULL DEFAULT ''")
     if "is_bookmarked" not in cols:
-        statements.append("ALTER TABLE article ADD COLUMN is_bookmarked BOOLEAN NOT NULL DEFAULT 0")
+        statements.append(
+            f"ALTER TABLE article ADD COLUMN is_bookmarked BOOLEAN NOT NULL DEFAULT {bool_default}"
+        )
     if "is_read" not in cols:
-        statements.append("ALTER TABLE article ADD COLUMN is_read BOOLEAN NOT NULL DEFAULT 0")
+        statements.append(
+            f"ALTER TABLE article ADD COLUMN is_read BOOLEAN NOT NULL DEFAULT {bool_default}"
+        )
     if "read_at" not in cols:
-        statements.append("ALTER TABLE article ADD COLUMN read_at DATETIME")
+        statements.append(f"ALTER TABLE article ADD COLUMN read_at {datetime_type}")
+
     if not statements:
         return
-    with db.engine.begin() as conn:
-        for stmt in statements:
-            conn.execute(text(stmt))
+
+    log = logging.getLogger(__name__)
+    # 1ステートメントずつ独立したトランザクションで実行(1つ失敗しても他は適用)
+    for stmt in statements:
+        try:
+            with db.engine.begin() as conn:
+                conn.execute(text(stmt))
+            log.info("migration applied: %s", stmt)
+        except Exception as e:
+            log.warning("migration step failed: %s — %s", stmt, e)
 
 
 def create_app() -> Flask:
