@@ -74,6 +74,7 @@ def _process_feed(source: str, url: str) -> int:
             translated = translate_article(title_vi, body_vi)
         except Exception as e:
             logger.error("Translation failed for %s: %s", link, e)
+            db.session.rollback()
             continue
 
         article = Article(
@@ -113,6 +114,11 @@ def fetch_all(app=None):
                 total += n
             except Exception as e:
                 logger.exception("Feed processing failed for %s: %s", source, e)
+                # Reset the session so the next feed can run independently.
+                try:
+                    db.session.rollback()
+                except Exception:
+                    pass
         logger.info("fetch_all done: %d new articles", total)
         return total
     finally:

@@ -5,6 +5,7 @@ import threading
 from apscheduler.schedulers.background import BackgroundScheduler
 from dotenv import load_dotenv
 from flask import Flask, abort, jsonify, render_template
+from sqlalchemy.pool import NullPool
 
 load_dotenv()
 
@@ -35,6 +36,12 @@ def create_app() -> Flask:
     app = Flask(__name__)
     app.config["SQLALCHEMY_DATABASE_URI"] = _build_db_uri()
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    # Avoid sharing psycopg2 connections across threads (scheduler + gunicorn workers).
+    # Sharing a single SSL connection across threads causes "decryption failed or bad record mac".
+    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+        "poolclass": NullPool,
+        "pool_pre_ping": True,
+    }
 
     db.init_app(app)
     with app.app_context():
