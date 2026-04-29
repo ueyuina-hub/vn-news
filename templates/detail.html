@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}{{ article.title_ja }} | ベトナムニュース日本語版{% endblock %}
+{% block content %}
+  <p><a class="back-link" href="{{ url_for('index') }}">← 一覧に戻る</a></p>
+
+  <article class="article-detail">
+    <div class="card-meta">
+      <span class="badge badge-{{ article.category }}">{{ article.category }}</span>
+      <span class="source">{{ article.source }}</span>
+      {% if article.published_at %}
+        <time class="time">{{ article.published_at.strftime('%Y-%m-%d %H:%M') }}</time>
+      {% endif %}
+    </div>
+
+    <h1 class="detail-title">{{ article.title_ja }}</h1>
+    <p class="detail-original-title">原題: {{ article.title_vi }}</p>
+
+    <section class="detail-section">
+      <h2>3行要約</h2>
+      <ul class="detail-summary">
+        {% for line in article.summary_lines %}
+          <li>{{ line }}</li>
+        {% endfor %}
+      </ul>
+    </section>
+
+    <section class="detail-section">
+      <h2>日本語訳</h2>
+      <div class="detail-body">
+        {% for para in article.body_ja.split('\n') if para.strip() %}
+          <p>{{ para }}</p>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="detail-section">
+      <details>
+        <summary>原文を見る</summary>
+        <div class="detail-body original">
+          {% for para in article.body_vi.split('\n') if para.strip() %}
+            <p>{{ para }}</p>
+          {% endfor %}
+        </div>
+      </details>
+    </section>
+
+    <p class="source-link-row">
+      <a class="card-source-link" href="{{ article.url }}" target="_blank" rel="noopener noreferrer">
+        元記事を開く ↗
+      </a>
+    </p>
+  </article>
+{% endblock %}

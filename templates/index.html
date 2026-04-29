@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}最新ニュース | ベトナムニュース日本語版{% endblock %}
+{% block content %}
+  <h1 class="page-title">最新ニュース</h1>
+  {% if not articles %}
+    <p class="empty">まだ記事がありません。バックグラウンドで取得中です。数分後に再読み込みしてください。</p>
+  {% endif %}
+  <ul class="article-list">
+    {% for a in articles %}
+      <li class="article-card">
+        <a class="card-link" href="{{ url_for('detail', article_id=a.id) }}">
+          <div class="card-meta">
+            <span class="badge badge-{{ a.category }}">{{ a.category }}</span>
+            <span class="source">{{ a.source }}</span>
+            {% if a.published_at %}
+              <time class="time">{{ a.published_at.strftime('%Y-%m-%d %H:%M') }}</time>
+            {% endif %}
+          </div>
+          <h2 class="card-title">{{ a.title_ja }}</h2>
+          <ul class="card-summary">
+            {% for line in a.summary_lines %}
+              <li>{{ line }}</li>
+            {% endfor %}
+          </ul>
+        </a>
+        <a class="card-source-link" href="{{ a.url }}" target="_blank" rel="noopener noreferrer">
+          元記事を開く ↗
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+{% endblock %}

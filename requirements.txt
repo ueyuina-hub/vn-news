@@ -1,0 +1,10 @@
+flask>=3.0
+flask-sqlalchemy>=3.1
+feedparser>=6.0
+trafilatura>=1.12
+lxml_html_clean>=0.4
+apscheduler>=3.10
+anthropic>=0.40
+python-dotenv>=1.0
+gunicorn>=21.2
+psycopg2-binary>=2.9

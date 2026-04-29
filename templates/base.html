@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}ベトナムニュース日本語版{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="site-header">
+    <a class="site-title" href="{{ url_for('index') }}">🇻🇳 ベトナムニュース日本語版</a>
+  </header>
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="site-footer">
+    <small>RSS: VnExpress / Tuoi Tre / Thanh Nien — 翻訳: Claude API</small>
+  </footer>
+</body>
+</html>
