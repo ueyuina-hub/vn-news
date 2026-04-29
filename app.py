@@ -124,9 +124,9 @@ def create_app() -> Flask:
             pass
         return None
 
-    # 500エラーを画面に詳細表示する(運用後は削除可だが診断時に有用)
+    # 例外時はログにだけ詳細を残し、画面にはシンプルなメッセージを表示
     @app.errorhandler(Exception)
-    def _show_exception(e):
+    def _handle_exception(e):
         if isinstance(e, HTTPException):
             return e
         logging.getLogger(__name__).exception("Unhandled exception")
@@ -134,11 +134,9 @@ def create_app() -> Flask:
             db.session.rollback()
         except Exception:
             pass
-        tb = traceback.format_exc()
         return Response(
-            f"<h1>500 Internal Error</h1>"
-            f"<p><b>{type(e).__name__}:</b> {e}</p>"
-            f"<pre style='white-space:pre-wrap;font-size:12px'>{tb}</pre>",
+            "<h1>一時的にご利用いただけません</h1>"
+            "<p>少し時間をおいて再度お試しください。</p>",
             500,
             {"Content-Type": "text/html; charset=utf-8"},
         )
