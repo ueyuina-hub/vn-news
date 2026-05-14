@@ -7,6 +7,7 @@ class Article(db.Model):
     __tablename__ = "article"
 
     id = db.Column(db.Integer, primary_key=True)
+    region = db.Column(db.String(32), nullable=False, default="vietnam", index=True)
     source = db.Column(db.String(64), nullable=False, index=True)
     url = db.Column(db.String(1024), nullable=False, unique=True, index=True)
 

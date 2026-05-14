@@ -1,6 +1,13 @@
 {% extends "base.html" %}
-{% block title %}最新ブリーフィング | Vietnam Briefing{% endblock %}
+{% block title %}最新ブリーフィング | Asia Briefing{% endblock %}
 {% block content %}
+
+  <nav class="region-tabs">
+    {% for r in regions %}
+      <a class="region-tab {% if current_region == r.code %}active{% endif %}"
+         href="{{ url_for('index', region=r.code) }}">{{ r.label }}</a>
+    {% endfor %}
+  </nav>
 
   {% if top3 and not bookmarked and not unread and not q and not current_category %}
     <section class="top3">
@@ -33,10 +40,11 @@
         type="search"
         name="q"
         value="{{ q }}"
-        placeholder="キーワード検索 (例: 不動産, ビザ, ホーチミン)"
+        placeholder="キーワード検索"
         class="search-input"
         autocomplete="off"
       >
+      <input type="hidden" name="region" value="{{ current_region }}">
       {% if current_category %}<input type="hidden" name="category" value="{{ current_category }}">{% endif %}
       {% if bookmarked %}<input type="hidden" name="bookmarked" value="1">{% endif %}
       {% if unread %}<input type="hidden" name="unread" value="1">{% endif %}
@@ -45,16 +53,17 @@
 
     <nav class="cat-nav">
       <a class="cat-chip {% if not current_category %}active{% endif %}"
-         href="{{ url_for('index', q=q or none, bookmarked='1' if bookmarked else none, unread='1' if unread else none) }}">すべて</a>
+         href="{{ url_for('index', region=current_region, q=q or none, bookmarked='1' if bookmarked else none, unread='1' if unread else none) }}">すべて</a>
       {% for c in categories %}
         <a class="cat-chip {% if current_category == c %}active{% endif %}"
-           href="{{ url_for('index', category=c, q=q or none, bookmarked='1' if bookmarked else none, unread='1' if unread else none) }}">{{ c }}</a>
+           href="{{ url_for('index', region=current_region, category=c, q=q or none, bookmarked='1' if bookmarked else none, unread='1' if unread else none) }}">{{ c }}</a>
       {% endfor %}
     </nav>
 
     <nav class="state-nav">
       <a class="state-chip {% if bookmarked %}active{% endif %}"
          href="{{ url_for('index',
+                          region=current_region,
                           category=current_category or none,
                           q=q or none,
                           bookmarked=none if bookmarked else '1',
@@ -63,6 +72,7 @@
       </a>
       <a class="state-chip {% if unread %}active{% endif %}"
          href="{{ url_for('index',
+                          region=current_region,
                           category=current_category or none,
                           q=q or none,
                           bookmarked='1' if bookmarked else none,

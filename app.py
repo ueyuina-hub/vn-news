@@ -13,7 +13,7 @@ from werkzeug.exceptions import HTTPException
 
 load_dotenv()
 
-from config import DB_PATH, FETCH_INTERVAL_MINUTES, VALID_CATEGORIES
+from config import DB_PATH, DEFAULT_REGION, FETCH_INTERVAL_MINUTES, REGIONS, VALID_CATEGORIES
 from db import db
 from fetcher import fetch_all
 from models import Article
@@ -53,6 +53,10 @@ def _light_migrate():
         statements.append("ALTER TABLE article ADD COLUMN exec_comment TEXT NOT NULL DEFAULT ''")
     if "easy_summary" not in cols:
         statements.append("ALTER TABLE article ADD COLUMN easy_summary TEXT NOT NULL DEFAULT ''")
+    if "region" not in cols:
+        statements.append(
+            "ALTER TABLE article ADD COLUMN region VARCHAR(32) NOT NULL DEFAULT 'vietnam'"
+        )
     if "is_bookmarked" not in cols:
         statements.append(
             f"ALTER TABLE article ADD COLUMN is_bookmarked BOOLEAN NOT NULL DEFAULT {bool_default}"
@@ -145,12 +149,16 @@ def create_app() -> Flask:
 
     @app.route("/")
     def index():
+        valid_region_codes = [r["code"] for r in REGIONS]
+        region = (request.args.get("region") or DEFAULT_REGION).strip()
+        if region not in valid_region_codes:
+            region = DEFAULT_REGION
         category = (request.args.get("category") or "").strip()
         q = (request.args.get("q") or "").strip()
         bookmarked = request.args.get("bookmarked") == "1"
         unread = request.args.get("unread") == "1"
 
-        query = Article.query
+        query = Article.query.filter(Article.region == region)
         if category and category in VALID_CATEGORIES:
             query = query.filter(Article.category == category)
         if q:
@@ -178,21 +186,19 @@ def create_app() -> Flask:
             .all()
         )
 
-        # 「今日の重要ニュース3本」: 過去48hで重要度の高い順、無ければ全期間から重要度順
+        # 「今日の重要ニュース3本」: 現在地域・過去48hで重要度の高い順、無ければ全期間から
         cutoff = datetime.utcnow() - timedelta(hours=48)
         top3 = (
-            Article.query.filter(
-                or_(Article.published_at >= cutoff, Article.created_at >= cutoff)
-            )
+            Article.query.filter(Article.region == region)
+            .filter(or_(Article.published_at >= cutoff, Article.created_at >= cutoff))
             .order_by(Article.importance.desc(), Article.published_at.desc().nullslast())
             .limit(3)
             .all()
         )
         if len(top3) < 3:
             top3 = (
-                Article.query.order_by(
-                    Article.importance.desc(), Article.published_at.desc().nullslast()
-                )
+                Article.query.filter(Article.region == region)
+                .order_by(Article.importance.desc(), Article.published_at.desc().nullslast())
                 .limit(3)
                 .all()
             )
@@ -206,6 +212,8 @@ def create_app() -> Flask:
             q=q,
             bookmarked=bookmarked,
             unread=unread,
+            regions=REGIONS,
+            current_region=region,
         )
 
     @app.route("/article/<int:article_id>")

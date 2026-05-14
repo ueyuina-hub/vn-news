@@ -7,7 +7,7 @@ from typing import Optional
 import feedparser
 import trafilatura
 
-from config import MAX_ARTICLES_PER_FEED, RSS_FEEDS
+from config import MAX_ARTICLES_PER_FEED, REGIONAL_FEEDS
 from db import db
 from models import Article
 from translator import translate_article
@@ -48,7 +48,7 @@ def _extract_full_body(url: str, fallback: str) -> str:
     return fallback
 
 
-def _process_feed(source: str, url: str) -> int:
+def _process_feed(region: str, source: str, url: str) -> int:
     parsed = feedparser.parse(url)
     if parsed.bozo:
         logger.warning("RSS parse warning for %s: %s", url, parsed.bozo_exception)
@@ -71,13 +71,14 @@ def _process_feed(source: str, url: str) -> int:
             continue
 
         try:
-            translated = translate_article(title_vi, body_vi)
+            translated = translate_article(title_vi, body_vi, region=region)
         except Exception as e:
             logger.error("Translation failed for %s: %s", link, e)
             db.session.rollback()
             continue
 
         article = Article(
+            region=region,
             source=source,
             url=link,
             title_vi=title_vi,
@@ -95,7 +96,7 @@ def _process_feed(source: str, url: str) -> int:
         try:
             db.session.commit()
             saved += 1
-            logger.info("[%s] saved: %s", source, translated["title_ja"][:60])
+            logger.info("[%s/%s] saved: %s", region, source, translated["title_ja"][:60])
         except Exception as e:
             db.session.rollback()
             logger.error("DB commit failed for %s: %s", link, e)
@@ -104,24 +105,24 @@ def _process_feed(source: str, url: str) -> int:
 
 
 def fetch_all(app=None):
-    """Fetch all configured RSS feeds, translate new entries, persist to DB."""
+    """Fetch all configured RSS feeds (all regions), translate new entries, persist to DB."""
     ctx = app.app_context() if app is not None else None
     if ctx:
         ctx.push()
     try:
         total = 0
-        for source, url in RSS_FEEDS:
-            try:
-                n = _process_feed(source, url)
-                logger.info("Fetched %d new articles from %s", n, source)
-                total += n
-            except Exception as e:
-                logger.exception("Feed processing failed for %s: %s", source, e)
-                # Reset the session so the next feed can run independently.
+        for region, feeds in REGIONAL_FEEDS.items():
+            for source, url in feeds:
                 try:
-                    db.session.rollback()
-                except Exception:
-                    pass
+                    n = _process_feed(region, source, url)
+                    logger.info("Fetched %d new articles from %s/%s", n, region, source)
+                    total += n
+                except Exception as e:
+                    logger.exception("Feed processing failed for %s/%s: %s", region, source, e)
+                    try:
+                        db.session.rollback()
+                    except Exception:
+                        pass
         logger.info("fetch_all done: %d new articles", total)
         return total
     finally:
